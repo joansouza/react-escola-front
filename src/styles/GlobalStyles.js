@@ -26,6 +26,9 @@ button{
   padding: 10px 20px;
   border-radius: 4px;
 }
+button:hover{
+  filter: brightness(85%);
+}
 
 a{
   text-decoration: none;
@@ -50,7 +53,7 @@ color: #D6F9FF;
 `;
 
 export const Container = stlyled.section`
-max-width:360px;
+max-width:480px;
 background:#fff;
 margin: 30px auto;
 padding:30px;

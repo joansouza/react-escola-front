@@ -4,7 +4,7 @@ import 'react-toastify/dist/ReactToastify.css';
 
 export default createGlobalStyle`
 *{
-  margin: 0;
+margin: 0;
 padding: 0;
 outline: none;
 box-sizing: border-box;

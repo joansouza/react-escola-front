@@ -1,13 +1,32 @@
 /* eslint-disable no-unused-vars */
 import { call, put, all, takeLatest } from 'redux-saga/effects';
-// import { toast } from 'react-toastify';
-// import * as actions from './actions';
-import * as types from '../types';
+import { toast } from 'react-toastify';
+import { get } from 'lodash';
 
-// eslint-disable-next-line no-empty-function
-// eslint-disable-next-line require-yield
+import * as actions from './actions';
+import * as types from '../types';
+import axios from '../../../services/axios';
+import history from '../../../services/history';
+
 function* loginRequest({ payload }) {
-  console.log('SAGA', payload);
+  try {
+    const response = yield call(axios.post, '/tokens', payload);
+    yield put(actions.loginSuccess({ ...response.data }));
+    toast.success('você está logado !');
+    axios.defaults.headers.Authorization = `Bearer ${response.data.token}`;
+    history.push(payload.pravPath);
+  } catch (e) {
+    toast.error('usuário ou senha inválidos');
+    yield put(actions.loginFailure());
+  }
 }
 
-export default all([takeLatest(types.LOGIN_REQUEST, loginRequest)]);
+function persistRehydrate({ payload }) {
+  const token = get(payload, 'auth.token', '');
+  if (!token) return;
+  axios.defaults.headers.Authorization = `Bearer ${token}`;
+}
+export default all([
+  takeLatest(types.LOGIN_REQUEST, loginRequest),
+  takeLatest(types.PERSIST_REHYDRATE, persistRehydrate),
+]);

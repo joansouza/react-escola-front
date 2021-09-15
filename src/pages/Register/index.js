@@ -1,17 +1,29 @@
 import React, { useState } from 'react';
 import { toast } from 'react-toastify';
 import { isEmail } from 'validator';
-import { get } from 'lodash';
+import { useSelector, useDispatch } from 'react-redux';
 
-import axios from '../../services/axios';
-import history from '../../services/history';
+import Loading from '../../components/Loading';
 import { Container } from '../../styles/GlobalStyles';
+import * as actions from '../../store/modules/auth/actions';
 import * as S from './styles';
 
 export default function Register() {
+  const id = useSelector((state) => state.auth.user.id);
+  const nomeStored = useSelector((state) => state.auth.user.nome);
+  const emailStored = useSelector((state) => state.auth.user.email);
+  const isLoading = useSelector((state) => state.auth.isLoading);
+  const dispatch = useDispatch();
+
   const [nome, setNome] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+
+  React.useEffect(() => {
+    if (!id) return;
+    setNome(nomeStored);
+    setEmail(emailStored);
+  }, [emailStored, id, nomeStored]);
 
   async function handleSubmit(e) {
     let formErrors = false;
@@ -24,31 +36,20 @@ export default function Register() {
       formErrors = true;
       toast.error('Email-invalido');
     }
-    if (password.length < 6 || password.length > 50) {
+    if (!id && (password.length < 6 || password.length > 50)) {
       formErrors = true;
       toast.error('senha deve estar entre 6 e 50 caracteres');
     }
 
+    // eslint-disable-next-line no-useless-return
     if (formErrors) return;
-
-    try {
-      const response = await axios.post('/users', {
-        nome,
-        email,
-        password,
-      });
-      toast.success('Cadastro Realizado');
-      history.push('/login');
-      console.log(response.data);
-    } catch (error) {
-      const errors = get(error, 'response.data.errors', []);
-      errors.map((erro) => toast.error(erro));
-    }
+    dispatch(actions.registerRequest({ nome, email, password, id }));
   }
 
   return (
     <Container>
-      <h1>Crie sua Conta</h1>
+      <Loading isLoading={isLoading} />
+      <h1>{id ? 'Editar Dados' : 'Crie sua Conta'}</h1>
       <S.Form onSubmit={handleSubmit}>
         <label htmlFor='nome'>
           Nome:{' '}
